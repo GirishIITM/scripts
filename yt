@@ -23,7 +23,7 @@ save_to_history() {
   local url="$1"
   local title="$2"
   local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
-  echo -e "$url\t$title\t$timestamp" >> "$historypath"
+  echo -e "$url\t$title\t$timestamp" >>"$historypath"
 }
 
 # function to save to history and play via mpv
@@ -111,62 +111,61 @@ sublist=""
 
 # if not using defaults search for flags
 if [[ $useDefaults = "f" ]]; then
-  while getopts ${optstring} arg;
-  do
+  while getopts ${optstring} arg; do
     case "${arg}" in
     s)
       # search in youtube for a query
       action="s"
       query="${OPTARG}"
-      ;; 
+      ;;
     c)
       # search in subscriptions for specific channel
       action="c"
       query="${OPTARG}"
-      ;; 
+      ;;
     g | r)
       # set gui mode to true and change the prompt to gui prompt
       isGui="t"
       promptcmd="$guicmd"
-      ;; 
+      ;;
     m)
       # make the mpv headless
       mpv_options+="--no-video"
-      ;; 
+      ;;
     H)
       # view watch history
       action="H"
-      ;; 
+      ;;
     p)
       # view saved playlists
       action="p"
-      ;; 
+      ;;
     P)
       # add playlist to saved playlists
       action="P"
       query="${OPTARG}"
-      ;; 
+      ;;
     x)
       # play a youtube mix
       action="x"
       query="${OPTARG}"
-      ;; 
+      ;;
     h)
       # display help / usage
       usage
-      ;; 
+      ;;
     \?)
       # wrong args -> exit with explanation of usage
       echo "invalid option: -${OPTARG}"
       echo
       usage
-      ;; 
+      ;;
     :)
       # missing args -> exit with explanation of usage
       echo "Option -${OPTARG} needs an argument"
       echo
       usage
-      ;; 
+      ;;
     esac
   done
 fi
@@ -253,7 +252,7 @@ if [[ $action = "P" ]]; then
       if [ -z "$playlist_name" ]; then
         playlist_name="Playlist"
       fi
-      echo -e "$query\t$playlist_name\t$(date '+%Y-%m-%d %H:%M:%S')" >> "$playlistspath"
+      echo -e "$query\t$playlist_name\t$(date '+%Y-%m-%d %H:%M:%S')" >>"$playlistspath"
       echo "Playlist '$playlist_name' added to saved playlists"
       exit 0
     else
@@ -318,15 +317,17 @@ if [[ $action = "c" ]]; then
   # prompt the results to user infinitely until they exit (escape)
   while true; do
     choice=$(echo -e "$ids" | cut -d$'	' -f2 | $promptcmd)       # dont show id
-    if [ -z "$choice" ]; then exit; fi                          # if esc-ed then exit
+    if [ -z "$choice" ]; then exit; fi                           # if esc-ed then exit
     id=$(echo -e "$ids" | grep -Fwm1 "$choice" | cut -d$'	' -f1) # get id of choice
     echo -e "$choice\t($id)"
     case $id in
     ???????????)
       url="$videolink$id"
-      play "$url" "$choice" ;; 
+      play "$url" "$choice"
+      ;;
     *)
-      exit ;; 
+      exit
+      ;;
     esac
   done
 else
@@ -339,8 +340,8 @@ else
     exit 1
   fi
   # regex expression to match video and playlist entries from yt result page
-  vgrep='"videoRenderer":{"videoId":"\K.{11}".+?"text":".+?[^\\](?="'
-  pgrep='"playlistRenderer":{"playlistId":"\K.{34}?","title":{"simpleText":".+?[^\"](?="'
+  vgrep='"videoRenderer":{"videoId":"\K.{11}".+?"text":".+?[^\\](?=")'
+  pgrep='"playlistRenderer":{"playlistId":"\K.{34}?","title":{"simpleText":".+?[^\"](?=")'
   # grep the id and title
   # return them in format id (type) title
   getresults() {
@@ -359,20 +360,23 @@ else
   # prompt the results to user infinitely until they exit (escape)
   while true; do
     choice=$(echo -e "$ids" | cut -d$'	' -f2 | $promptcmd)       # dont show id
-    if [ -z "$choice" ]; then exit; fi                          # if esc-ed then exit
+    if [ -z "$choice" ]; then exit; fi                           # if esc-ed then exit
     id=$(echo -e "$ids" | grep -Fwm1 "$choice" | cut -d$'	' -f1) # get id of choice
     echo -e "$choice\t($id)"
     case $id in
     # 11 digit id = video
     ???????????)
       url="$videolink$id"
-      play "$url" "$choice" ;; 
+      play "$url" "$choice"
+      ;;
     # 34 digit id = playlist
     ??????????????????????????????????)
       url="$playlink$id"
-      play "$url" "$choice" ;; 
+      play "$url" "$choice"
+      ;;
     *)
-      exit ;; 
+      exit
+      ;;
     esac
   done
 fi
